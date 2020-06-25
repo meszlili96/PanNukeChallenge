@@ -83,15 +83,4 @@ for k = 1:numel(unused_nuclei_list)
     union_pixel_count = union_pixel_count + nnz(unused_nuclei);
 end
 aji = overall_correct_count/union_pixel_count;
-   
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
