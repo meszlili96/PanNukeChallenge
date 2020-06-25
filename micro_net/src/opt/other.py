@@ -17,6 +17,7 @@ micronet = {
                         [(str(epoch), 1.0 / epoch) for epoch in range(2, 251)]
                     ),
             },
+            'pretrained_path'  : '/home/ccurs011/HoverNet/pretrained/ImageNet-ResNet50-Preact.npz',
             'train_batch_size'  : 4,
             'infer_batch_size'  : 8,
 
