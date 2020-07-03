@@ -2,6 +2,8 @@
 
 Based on the implementation of [Quoc Dang Vu](https://github.com/vqdang) and [Simon Graham](https://github.com/simongraham) available at [this link](https://github.com/vqdang/hover_net).
 
+![](pipeline.png)
+
 ## Steps to Reproduce Results
 ### Prerequisites
 1. Install the requirements (it is probably easier to create a separate environment with conda):
