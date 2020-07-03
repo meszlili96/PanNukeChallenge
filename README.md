@@ -1,6 +1,7 @@
 # PanNuke Challenge
 
-Based on the implementation of [Quoc Dang Vu](https://github.com/vqdang) and [Simon Graham](https://github.com/simongraham) available at [this link](https://github.com/vqdang/hover_net).
+* Micro-Net and Hover-Net are based on the implementation of [Quoc Dang Vu](https://github.com/vqdang) and [Simon Graham](https://github.com/simongraham) available at [this link](https://github.com/vqdang/hover_net).
+* The evaluation is taken from [TIA-Lab/PanNuke-metrics](https://github.com/TIA-Lab/PanNuke-metrics).
 
 ![](pipeline.png)
 
@@ -57,6 +58,6 @@ path_to_folder = '/output/v3.0/micronet/_proc'
 output = 'masks.npy'
 ```
 12. Run `src/metrics/remove_lostids_from_gt_fold3.py` and `src/metrics/remove_lostids_from_gt_fold1.py` to remove the lost files from the ground truth. 
-13. Now, `run.py --true_path=<n> --pred_path=<n> --save_path=<n>y` in the repository TIA-Lab/PanNuke-metrics can be used to obtain the panoptic quality scores.
+13. Now, `python src/metrics/run.py --true_path=<n> --pred_path=<n> --save_path=<n>y` can be used to obtain the panoptic quality scores.
 13. For the detection/classification metrics, run `python convert_to_centroids.py` to extract the centroids of the ground truth.
 14. Now, `src/compute_stats.py` in the repository vqdang/hover_net can be run with ground truth being the extracted centroids and the predictions being post-processed predictions (.mat files).
