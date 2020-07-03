@@ -123,6 +123,12 @@ for filename in file_list:
                         'inst_type' :     pred_inst_type[:, None],
                         'inst_centroid' : pred_inst_centroid,
                     })
+
+        pred_inst = np.expand_dims(pred_inst.astype(np.int16), -1)
+        pred_type = np.expand_dims(pred_type.astype(np.int16), -1)
+        pred = np.dstack([pred_inst, pred_type])
+
+        np.save('%s/%s.npy' % (proc_dir, basename), pred)
     else:
         sio.savemat('%s/%s.mat' % (proc_dir, basename),
                     {'inst_map'  : pred_inst})
