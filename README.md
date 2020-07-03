@@ -1,5 +1,6 @@
 # PanNuke Challenge
 
+* The implementation by Team 11: Eugenia Martynova, Lili Mészáros, Denise Meerkerk, Linda Schmeitz, Enrico Schmitz and Luca Carotenuto.
 * Micro-Net and Hover-Net are based on the implementation of [Quoc Dang Vu](https://github.com/vqdang) and [Simon Graham](https://github.com/simongraham) available at [this link](https://github.com/vqdang/hover_net).
 * The evaluation is taken from [TIA-Lab/PanNuke-metrics](https://github.com/TIA-Lab/PanNuke-metrics).
 
