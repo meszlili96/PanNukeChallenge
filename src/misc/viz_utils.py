@@ -1,4 +1,3 @@
-
 import cv2
 import math
 import random
@@ -8,30 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from .utils import bounding_box
-
-def class_colour(class_value):
-    """
-    Generate RGB colour for overlay based on class id
-    Args:
-        class_value: integer denoting the class of object
-    """
-    if class_value == 0:
-        return 0, 0, 0  # black (background)
-    if class_value == 1:
-        return 255, 0, 0  # red
-    elif class_value == 2:
-        return 0, 255, 0  # green
-    elif class_value == 3:
-        return 0, 0, 255  # blue
-    elif class_value == 4:
-        return 255, 255, 0  # yellow
-    elif class_value == 5:
-        return 255, 165, 0  # orange
-    elif class_value == 6:
-        return 0, 255, 255  # cyan
-    else:
-        raise Exception(
-            'Currently, overlay_segmentation_results() only supports up to 6 classes.')
 
 ####
 def random_colors(N, bright=True):
@@ -43,6 +18,7 @@ def random_colors(N, bright=True):
     brightness = 1.0 if bright else 0.7
     hsv = [(i / N, 1, brightness) for i in range(N)]
     colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
+    random.shuffle(colors)
     return colors
 
 ####
@@ -60,11 +36,15 @@ def visualize_instances(mask, canvas=None, color=None):
     insts_list = list(np.unique(mask))
     insts_list.remove(0) # remove background
 
-    inst_colors = random_colors(len(insts_list))
-    inst_colors = np.array(inst_colors) * 255
+    inst_colors = ((0,0,0),     #black
+                   (255,0,0),   #red    Neoplastic
+                   (0,255,0),   #green  Imflammatory
+                   (0,0,255),   #blue   Connective
+                   (255,255,0), #yellow Dead
+                   (255,0,255)) #purple Epithelial
 
     for idx, inst_id in enumerate(insts_list):
-        inst_color = class_colour(inst_id)
+        inst_color = inst_colors[inst_id]
         inst_map = np.array(mask == inst_id, np.uint8)
         y1, y2, x1, x2  = bounding_box(inst_map)
         y1 = y1 - 2 if y1 - 2 >= 0 else y1
@@ -73,9 +53,9 @@ def visualize_instances(mask, canvas=None, color=None):
         y2 = y2 + 2 if y2 + 2 <= mask.shape[0] - 1 else y2
         inst_map_crop = inst_map[y1:y2, x1:x2]
         inst_canvas_crop = canvas[y1:y2, x1:x2]
-        contours, _ = cv2.findContours(inst_map_crop, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours,_ = cv2.findContours(inst_map_crop, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(inst_canvas_crop, contours, -1, inst_color, 2)
-        canvas[y1:y2, x1:x2] = inst_canvas_crop
+        canvas[y1:y2, x1:x2] = inst_canvas_crop        
     return canvas
 
 ####
@@ -90,7 +70,7 @@ def gen_figure(imgs_list, titles, fig_inch, shape=None,
         nrows, ncols = shape
 
     # generate figure
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, 
                         sharex=share_ax, sharey=share_ax)
     axes = [axes] if nrows == 1 else axes
 
@@ -100,20 +80,20 @@ def gen_figure(imgs_list, titles, fig_inch, shape=None,
         for cell in ax:
             cell.set_title(titles[idx])
             cell.imshow(imgs_list[idx], cmap=colormap)
-            cell.tick_params(axis='both',
-                            which='both',
-                            bottom='off',
-                            top='off',
-                            labelbottom='off',
-                            right='off',
-                            left='off',
+            cell.tick_params(axis='both', 
+                            which='both', 
+                            bottom='off', 
+                            top='off', 
+                            labelbottom='off', 
+                            right='off', 
+                            left='off', 
                             labelleft='off')
             idx += 1
             if idx == len(titles):
                 break
         if idx == len(titles):
             break
-
+ 
     fig.tight_layout()
     return fig
 ####

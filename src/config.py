@@ -1,5 +1,3 @@
-
-
 import importlib
 import random
 
@@ -48,7 +46,7 @@ class Config(object):
         if mode == 'hover':
             config_file = importlib.import_module('opt.hover') # np_hv, np_dist
         else:
-            config_file = importlib.import_module('opt.other') # fcn8, dcan, etc.
+            config_file = importlib.import_module('opt.other') # micronet
         config_dict = config_file.__getattribute__(self.model_type)
 
         for variable, value in config_dict.items():
@@ -61,22 +59,12 @@ class Config(object):
         #     HoVer-Net: RGB - Nuclei Pixels - Type Map - Horizontal and Vertical Map
         # Ex: with type_classification=False
         #     Dist     : RGB - Nuclei Pixels - Distance Map
-        data_code_dict = {
-            'unet'     : '536x536_84x84',
-            'dist'     : '536x536_84x84',
-            'fcn8'     : '512x512_256x256',
-            'dcan'     : '512x512_256x256',
-            'segnet'   : '512x512_256x256',
-            'micronet' : '504x504_252x252',
-            'np_hv'    : '540x540_80x80',
-            'np_dist'  : '540x540_80x80',
-        }
 
         self.data_ext = '.npy'
         # list of directories containing validation patches.
         # For both train and valid directories, a comma separated list of directories can be used
-        self.train_dir = ['/home/ccurs011/HoverNet/PanT/fold1/']
-        self.valid_dir = ['/home/ccurs011/HoverNet/PanT/fold2/']
+        self.train_dir = ['/home/ccurs011/HoverNet/PanTransform/train_1/','/home/ccurs011/HoverNet/PanTransform/train_2/']
+        self.valid_dir = ['/home/ccurs011/HoverNet/PanTransform/test/']
 
         # number of processes for parallel processing input
         self.nr_procs_train = 8
@@ -89,21 +77,21 @@ class Config(object):
         model_id = '%s' % self.model_type
         self.model_name = '%s/%s' % (exp_id, model_id)
         # loading chkpts in tensorflow, the path must not contain extra '/'
-        self.log_path = '/home/ccurs011/HoverNet/hover_net/hovernet_logs_split1/' #'/media/vqdang/logs/' # log root path - modify according to needs
-        self.save_dir = '%s/%s/00' % (self.log_path, self.model_name) # log file destination
+        self.log_path = '/home/ccurs011/HoverNet/hover_net/hovernet_logs/' #'/media/vqdang/logs/' # log root path - modify according to needs
+        self.save_dir = '%s/%s' % (self.log_path, self.model_name) # log file destination
 
         #### Info for running inference
-        self.inf_auto_find_chkpt = True
+        self.inf_auto_find_chkpt = False
         # path to checkpoints will be used for inference, replace accordingly
-        self.inf_model_path  = self.save_dir + '/model-13566.index'
+        self.inf_model_path  = self.save_dir + '/00/model-13566.index'
 
         # output will have channel ordering as [Nuclei Type][Nuclei Pixels][Additional]
         # where [Nuclei Type] will be used for getting the type of each instance
         # while [Nuclei Pixels][Additional] will be used for extracting instances
 
         self.inf_imgs_ext = '.png'
-        self.inf_data_dir = '/home/ccurs011/PanNuke Inference/fold3/'
-        self.inf_output_dir = '/home/ccurs011/HoverNet/hover_net/output_split1/%s/%s/' % (exp_id, model_id)
+        self.inf_data_dir = '/home/ccurs011/PanNuke Inference Subset/'
+        self.inf_output_dir = '/home/ccurs011/HoverNet/hover_net/output/%s/%s/' % (exp_id, model_id)
 
         # for inference during evalutaion mode i.e run by infer.py
         self.eval_inf_input_tensor_names = ['images']
@@ -119,7 +107,7 @@ class Config(object):
             model_constructor = importlib.import_module('model.graph')
             model_constructor = model_constructor.Model_NP_DIST
         else:
-            model_constructor = importlib.import_module('model.%s' % self.model_type)
+            model_constructor = importlib.import_module('model.micronet')
             model_constructor = model_constructor.Graph
         return model_constructor # NOTE return alias, not object
 
@@ -160,15 +148,11 @@ class Config(object):
         ]
 
         label_augs = []
-        if self.model_type == 'unet' or self.model_type == 'micronet':
+        if self.model_type == 'micronet':
             label_augs =[GenInstanceUnetMap(crop_shape=output_shape)]
-        if self.model_type == 'dcan':
-            label_augs =[GenInstanceContourMap(crop_shape=output_shape)]
-        if self.model_type == 'dist':
-            label_augs = [GenInstanceDistance(crop_shape=output_shape, inst_norm=False)]
-        if self.model_type == 'np_hv':
+        elif self.model_type == 'np_hv':
             label_augs = [GenInstanceHV(crop_shape=output_shape)]
-        if self.model_type == 'np_dist':
+        elif self.model_type == 'np_dist':
             label_augs = [GenInstanceDistance(crop_shape=output_shape, inst_norm=True)]
 
         if not self.type_classification:
@@ -188,15 +172,11 @@ class Config(object):
         input_augs = None
 
         label_augs = []
-        if self.model_type == 'unet' or self.model_type == 'micronet':
+        if self.model_type == 'micronet':
             label_augs =[GenInstanceUnetMap(crop_shape=output_shape)]
-        if self.model_type == 'dcan':
-            label_augs =[GenInstanceContourMap(crop_shape=output_shape)]
-        if self.model_type == 'dist':
-            label_augs = [GenInstanceDistance(crop_shape=output_shape, inst_norm=False)]
-        if self.model_type == 'np_hv':
+        elif self.model_type == 'np_hv':
             label_augs = [GenInstanceHV(crop_shape=output_shape)]
-        if self.model_type == 'np_dist':
+        elif self.model_type == 'np_dist':
             label_augs = [GenInstanceDistance(crop_shape=output_shape, inst_norm=True)]
         label_augs.append(BinarizeLabel())
 

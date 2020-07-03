@@ -11,7 +11,7 @@ from scipy import io as sio
 from tensorpack.predict import OfflinePredictor, PredictConfig
 from tensorpack.tfutils.sessinit import get_model_loader
 
-from config_split1 import Config
+from config import Config
 from misc.utils import rm_n_mkdir
 
 import json
@@ -39,7 +39,7 @@ def get_best_chkpts(path, metric_name, comparator='>'):
     op_func = ops[comparator]
     with open(stat_file) as f:
         info = json.load(f)
-
+    
     if comparator == '>':
         best_value  = -float("inf")
     else:
@@ -65,8 +65,8 @@ class Inferer(Config):
 
         Args:
             x : input image to be segmented. It will be split into patches
-                to run the prediction upon before being assembled back
-        """
+                to run the prediction upon before being assembled back            
+        """    
         step_size = self.infer_mask_shape
         msk_size = self.infer_mask_shape
         win_size = self.infer_input_shape
@@ -75,8 +75,8 @@ class Inferer(Config):
             nr_step = math.ceil((length - msk_size) / step_size)
             last_step = (nr_step + 1) * step_size
             return int(last_step), int(nr_step + 1)
-
-        im_h = x.shape[0]
+        
+        im_h = x.shape[0] 
         im_w = x.shape[1]
 
         last_h, nr_step_h = get_last_steps(im_h, msk_size[0], step_size[0])
@@ -97,7 +97,7 @@ class Inferer(Config):
         # generating subpatches from orginal
         for row in range(0, last_h, step_size[0]):
             for col in range (0, last_w, step_size[1]):
-                win = x[row:row+win_size[0],
+                win = x[row:row+win_size[0], 
                         col:col+win_size[1]]
                 sub_patches.append(win)
 
@@ -122,7 +122,7 @@ class Inferer(Config):
         pred_map = np.reshape(pred_map, (nr_step_h, nr_step_w) + pred_map.shape[1:])
         pred_map = np.transpose(pred_map, [0, 2, 1, 3, 4]) if ch != 1 else \
                         np.transpose(pred_map, [0, 2, 1, 3])
-        pred_map = np.reshape(pred_map, (pred_map.shape[0] * pred_map.shape[1],
+        pred_map = np.reshape(pred_map, (pred_map.shape[0] * pred_map.shape[1], 
                                          pred_map.shape[2] * pred_map.shape[3], ch))
         pred_map = np.squeeze(pred_map[:im_h,:im_w]) # just crop back to original size
 
@@ -154,7 +154,7 @@ class Inferer(Config):
         file_list = glob.glob('%s/*%s' % (self.inf_data_dir, self.inf_imgs_ext))
         file_list.sort() # ensure same order
 
-        rm_n_mkdir(save_dir)
+        rm_n_mkdir(save_dir)       
         for filename in file_list:
             filename = os.path.basename(filename)
             basename = filename.split('.')[0]
@@ -165,7 +165,10 @@ class Inferer(Config):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             ##
-            pred_map = self.__gen_prediction(img, predictor)
+            if self.model_type == 'micronet':
+                pred_map = np.array(predictor(img.reshape((1, 256, 256, 3)))).reshape((256, 256, 7))
+            else:
+                pred_map = self.__gen_prediction(img, predictor)
             sio.savemat('%s/%s.mat' % (save_dir, basename), {'result':[pred_map]})
             print('FINISH')
 
@@ -174,7 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', help='comma separated list of GPU(s) to use.')
     args = parser.parse_args()
-
+        
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     n_gpus = len(args.gpu.split(','))

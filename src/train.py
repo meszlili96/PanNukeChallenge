@@ -1,4 +1,3 @@
-
 import argparse
 import json
 import os
@@ -14,7 +13,7 @@ from tensorpack.train import (SyncMultiGPUTrainerParameterServer, TrainConfig,
                               launch_train_with_config)
 
 import loader.loader as loader
-from config_split2 import Config
+from config import Config
 from misc.utils import get_files
 
 import matplotlib.pyplot as plt
@@ -39,12 +38,12 @@ class StatCollector(Inferencer, Config):
         pred, true = outputs
         self.true_list.extend(true)
         self.pred_list.extend(pred)
-
+ 
     def _after_inference(self):
         # ! factor this out
         def _dice(true, pred, label):
-            true = np.array(true == label, np.int32)
-            pred = np.array(pred == label, np.int32)
+            true = np.array(true == label, np.int32)            
+            pred = np.array(pred == label, np.int32)            
             inter = (pred * true).sum()
             total = (pred + true).sum()
             return 2 * inter /  (total + 1.0e-8)
@@ -56,15 +55,15 @@ class StatCollector(Inferencer, Config):
         # have to get total number pixels for mean per pixel
         nr_pixels = np.size(true[...,:1])
 
-        if self.type_classification:
-
+        if self.type_classification: 
+         
             pred_type = pred[...,:self.nr_types]
             pred_inst = pred[...,self.nr_types:]
 
             true_inst = true
             true_type = true[...,1]
             true_np = (true_type > 0).astype('int32')
-
+           
         else:
             pred_inst = pred
             true_inst = true
@@ -74,14 +73,7 @@ class StatCollector(Inferencer, Config):
         # * and all model's graphs must follow same index ordering protocol
 
         # classification statistic
-        if self.model_type == 'dist':
-            # regression
-            pred_dst = pred_inst[...,-1]
-            true_dst = true_inst[...,-1]
-            error = pred_dst - true_dst
-            mse = np.sum(error * error) / nr_pixels
-            stat_dict[self.prefix + '_mse'] = mse
-        elif self.model_type == 'np_hv':
+        if self.model_type == 'np_hv':
             pred_hv = pred_inst[...,-2:]
             true_hv = true_inst[...,-2:]
             error = pred_hv - true_hv
@@ -89,7 +81,7 @@ class StatCollector(Inferencer, Config):
             stat_dict[self.prefix + '_mse'] = mse
 
         # classification statistic
-        if self.model_type != 'dist':
+        else:
             pred_np = pred_inst[...,0]
             true_np = true_inst[...,0]
 
@@ -103,19 +95,6 @@ class StatCollector(Inferencer, Config):
 
             stat_dict[self.prefix + '_acc' ] = accuracy
             stat_dict[self.prefix + '_dice'] = dice
-
-            if self.model_type == 'dcan':
-                # do one more for contour
-                pred_np = pred_inst[...,1]
-                true_np = true_inst[...,1]
-                pred_np[pred_np >  0.5] = 1.0
-                pred_np[pred_np <= 0.5] = 0.0
-
-                inter = (pred_np * true_np).sum()
-                total = (pred_np + true_np).sum()
-                dice = 2 * inter / (total + 1.0e-8)
-
-                stat_dict[self.prefix + '_cnt_dice'] = dice
 
         if self.type_classification:
             pred_type = np.argmax(pred_type, axis=-1)
@@ -131,7 +110,7 @@ class StatCollector(Inferencer, Config):
 ####
 
 ###########################################
-class Trainer(Config):
+class Trainer(Config):   
     ####
     def get_datagen(self, batch_size, mode='train', view=False):
         if mode == 'train':
@@ -160,8 +139,8 @@ class Trainer(Config):
                         label_aug=augmentors[2],
                         batch_size=batch_size,
                         nr_procs=nr_procs)
-
-        return datagen
+        
+        return datagen      
     ####
     def view_dataset(self, mode='train'):
         assert mode == 'train' or mode == 'valid', "Invalid view mode"
@@ -180,7 +159,7 @@ class Trainer(Config):
         else:
             logger.set_logger_dir(save_dir)
 
-        ######
+        ######            
         model_flags = opt['model_flags']
         model = self.get_model()(**model_flags)
         ######
@@ -196,7 +175,7 @@ class Trainer(Config):
         callbacks.append(DataParallelInferenceRunner(
                                 valid_datagen, infs, list(range(nr_gpus))))
         callbacks.append(MaxSaver('valid_dice'))
-
+        
         ######
         steps_per_epoch = train_datagen.size() // nr_gpus
 
@@ -231,7 +210,7 @@ class Trainer(Config):
                 tf.random.set_random_seed(self.seed)
 
                 log_dir = '%s/%02d/' % (self.save_dir, idx)
-                pretrained_path = opt['pretrained_path']
+                pretrained_path = opt['pretrained_path'] 
                 if pretrained_path == -1:
                     pretrained_path = get_last_chkpt_path(prev_log_dir)
                     init_weights = SaverRestore(pretrained_path, ignore=['learning_rate'])
@@ -259,7 +238,7 @@ class Trainer(Config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpu', help="comma separated list of GPU(s) to use.")
+    parser.add_argument('--gpu', help="comma separated list of GPU(s) to use")
     parser.add_argument('--view', help="view dataset, received either 'train' or 'valid' as input")
     args = parser.parse_args()
 
