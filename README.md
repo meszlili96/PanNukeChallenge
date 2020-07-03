@@ -51,11 +51,12 @@ self.inf_output_dir = '/output/'
 10. Final instance segmentation can be obtained by running `python src/process.py`.
 
 ### Evaluation
-11. The results are in .mat format, therefore `src/metrics/transform_for_metrics.py` needs to be run once again with 6 settings to convert it back to the PanNuke format. The path to the resulting .mat files and the output .npy file is necessary. This will look something like the following:
+11. For the segmentation metrics `src/metrics/transform_for_metrics.py` needs to be run to convert the predictions back to the PanNuke format with 6 channels. The path to the resulting .mat files and the output .npy file is necessary. This will look something like the following:
 ```
 path_to_folder = '/output/v3.0/micronet/_proc' 
 output = 'masks.npy'
 ```
-12. Run `python convert_to_centroids.py` to extract the centroids of the ground truth.
-13. Run `src/metrics/remove_lostids_from_gt_fold3.py` and `src/metrics/remove_lostids_from_gt_fold1.py` to remove the lost files from the ground truth.
-14. run hovernet_metrics_job with ground truth being the extracted centroids and the predictions being post-processed predictions (.mat files)
+12. Run `src/metrics/remove_lostids_from_gt_fold3.py` and `src/metrics/remove_lostids_from_gt_fold1.py` to remove the lost files from the ground truth. 
+13. Now, `run.py --true_path=<n> --pred_path=<n> --save_path=<n>y` in the repository TIA-Lab/PanNuke-metrics can be used to obtain the panoptic quality scores.
+13. For the detection/classification metrics, run `python convert_to_centroids.py` to extract the centroids of the ground truth.
+14. Now, `src/compute_stats.py` in the repository vqdang/hover_net can be run with ground truth being the extracted centroids and the predictions being post-processed predictions (.mat files).
