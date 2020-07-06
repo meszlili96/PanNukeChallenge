@@ -1,5 +1,6 @@
 # PanNuke Challenge
 
+* The implementation by Team 11: Eugenia Martynova, Lili Mészáros, Denise Meerkerk, Linda Schmeitz, Enrico Schmitz and Luca Carotenuto.
 * Micro-Net and Hover-Net are based on the implementation of [Quoc Dang Vu](https://github.com/vqdang) and [Simon Graham](https://github.com/simongraham) available at [this link](https://github.com/vqdang/hover_net).
 * The evaluation is taken from [TIA-Lab/PanNuke-metrics](https://github.com/TIA-Lab/PanNuke-metrics).
 
@@ -66,8 +67,8 @@ output = 'masks.npy'
 ```
 13. Run `src/metrics/remove_lostids_from_gt_fold3.py` and `src/metrics/remove_lostids_from_gt_fold1.py` to remove the lost files from the ground truth. 
 14. Now, `python src/metrics/run.py --true_path=<n> --pred_path=<n> --save_path=<n>y` can be used to obtain the panoptic quality scores.
-15. For the detection/classification metrics, run `python convert_to_centroids.py` to extract the centroids of the ground truth.
-16. Now, `src/compute_stats.py` in the repository vqdang/hover_net can be run with ground truth being the extracted centroids and the predictions being post-processed predictions (.mat files).
+15. For the detection/classification metrics, run `python src/metrics/convert_to_centroids.py` to extract the centroids of the ground truth.
+16. Now, `python src/compute_stats.py` can be run with ground truth being the extracted centroids and the predictions being post-processed predictions (.mat files).
 
 ### Ensemble
 17. Ensemble learns weights it gives each model based on the subset of validation images balanced by tissue type. We used 10 images of each tissue type, which gave 190 for split 2 and 186 for splits 1 and 3, since for these splits one tissue type did not have 10 images. The extraction of the subset is implemented in `balanced_val_subset.py` script
